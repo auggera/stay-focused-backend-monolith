@@ -1,0 +1,12 @@
+spring:
+  application:
+    name: stay-focused-backend-monolith
+  profiles:
+    active: dev
+
+  jpa:
+    show-sql: false
+
+logging:
+  level:
+    root: INFO

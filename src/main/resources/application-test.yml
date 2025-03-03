@@ -1,0 +1,22 @@
+spring:
+  datasource:
+    url: ${SF_MONO_TEST_DATASOURCE_URL}
+    username: ${SF_MONO_TEST_DATASOURCE_USERNAME}
+    password: ${SF_MONO_TEST_DATASOURCE_PASSWORD}
+
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: update
+
+  h2:
+    console:
+      enabled: false
+
+logging:
+  level:
+    org:
+      springframework: INFO
+    one:
+      stayfocused:
+        backend: INFO
