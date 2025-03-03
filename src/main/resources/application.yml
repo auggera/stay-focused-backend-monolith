@@ -4,6 +4,9 @@ spring:
   profiles:
     active: dev
 
+  liquibase:
+    change-log: classpath:db/changelog/changelog-master.yaml
+
   jpa:
     show-sql: false
 

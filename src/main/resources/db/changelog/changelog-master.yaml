@@ -1,0 +1,216 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1
+      author: Augustin Gerasym
+      changes:
+        - createTable:
+            tableName: users
+            columns:
+              - column:
+                  name: id
+                  type: bigint
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+              - column:
+                  name: name
+                  type: varchar(100)
+              - column:
+                  name: email
+                  type: varchar(255)
+                  constraints:
+                    unique: true
+                    nullable: false
+              - column:
+                  name: password_hash
+                  type: text
+              - column:
+                  name: email_verified
+                  type: boolean
+                  defaultValueBoolean: false
+              - column:
+                  name: provider
+                  type: varchar(50)
+              - column:
+                  name: provider_id
+                  type: varchar(255)
+              - column:
+                  name: avatar_url
+                  type: varchar(255)
+              - column:
+                  name: created_at
+                  type: timestamp
+                  defaultValueComputed: CURRENT_TIMESTAMP
+              - column:
+                  name: updated_at
+                  type: timestamp
+                  defaultValueComputed: CURRENT_TIMESTAMP
+
+  - changeSet:
+      id: 2
+      author: Augustin Gerasym
+      changes:
+        - createTable:
+            tableName: roles
+            columns:
+              - column:
+                  name: id
+                  type: bigint
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+              - column:
+                  name: name
+                  type: varchar(50)
+                  constraints:
+                    unique: true
+                    nullable: false
+
+  - changeSet:
+      id: 3
+      author: Augustin Gerasym
+      changes:
+        - createTable:
+            tableName: user_roles
+            columns:
+              - column:
+                  name: user_id
+                  type: bigint
+                  constraints:
+                    nullable: false
+              - column:
+                  name: role_id
+                  type: bigint
+                  constraints:
+                    nullable: false
+
+        - addPrimaryKey:
+            tableName: user_roles
+            columnNames: user_id, role_id
+            constraintName: pk_user_roles
+
+        - addForeignKeyConstraint:
+            baseTableName: user_roles
+            baseColumnNames: user_id
+            constraintName: fk_user_roles_users
+            referencedTableName: users
+            referencedColumnNames: id
+            onDelete: CASCADE
+
+        - addForeignKeyConstraint:
+            baseTableName: user_roles
+            baseColumnNames: role_id
+            constraintName: fk_user_roles_roles
+            referencedTableName: roles
+            referencedColumnNames: id
+            onDelete: CASCADE
+
+  - changeSet:
+      id: 4
+      author: Augustin Gerasym
+      changes:
+        - createTable:
+            tableName: focus_sessions
+            columns:
+              - column:
+                  name: id
+                  type: bigint
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+              - column:
+                  name: user_id
+                  type: bigint
+                  constraints:
+                    foreignKeyName: fk_focus_sessions_users
+                    references: users(id)
+                    nullable: false
+              - column:
+                  name: status
+                  type: varchar(50)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: started_at
+                  type: timestamp
+                  defaultValueComputed: CURRENT_TIMESTAMP
+              - column:
+                  name: ended_at
+                  type: timestamp
+              - column:
+                  name: total_focus_time
+                  type: int
+                  defaultValue: "0"
+              - column:
+                  name: total_break_time
+                  type: int
+                  defaultValue: "0"
+              - column:
+                  name: created_at
+                  type: timestamp
+                  defaultValueComputed: CURRENT_TIMESTAMP
+              - column:
+                  name: updated_at
+                  type: timestamp
+                  defaultValueComputed: CURRENT_TIMESTAMP
+
+  - changeSet:
+      id: 5
+      author: Augustin Gerasym
+      changes:
+        - createTable:
+            tableName: user_settings
+            columns:
+              - column:
+                  name: id
+                  type: bigint
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+              - column:
+                  name: user_id
+                  type: bigint
+                  constraints:
+                    foreignKeyName: fk_user_settings_users
+                    references: users(id)
+                    nullable: false
+              - column:
+                  name: custom_work_duration
+                  type: int
+              - column:
+                  name: custom_break_duration
+                  type: int
+              - column:
+                  name: custom_cycles
+                  type: int
+              - column:
+                  name: created_at
+                  type: timestamp
+                  defaultValueComputed: CURRENT_TIMESTAMP
+              - column:
+                  name: updated_at
+                  type: timestamp
+                  defaultValueComputed: CURRENT_TIMESTAMP
+
+  - changeSet:
+      id: 6
+      author: Augustin Gerasym
+      changes:
+        - createIndex:
+            tableName: users
+            indexName: idx_users_email
+            columns:
+              - column:
+                  name: email
+        - createIndex:
+            tableName: focus_sessions
+            indexName: idx_focus_sessions_user_id
+            columns:
+              - column:
+                  name: user_id
+        - createIndex:
+            tableName: user_settings
+            indexName: idx_user_settings_user_id
+            columns:
+              - column:
+                  name: user_id

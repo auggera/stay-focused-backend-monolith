@@ -1,14 +1,13 @@
 spring:
   datasource:
     driverClassName: org.h2.Driver
-    url: ${SF_MONO_DEV_DATASOURCE_URL:jdbc:h2:mem:stayfocused}
+    url: ${SF_MONO_DEV_DATASOURCE_URL:jdbc:h2:mem:stayfocused;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE}
     username: ${SF_MONO_DEV_DATASOURCE_USERNAME:sa}
     password: ${SF_MONO_DEV_DATASOURCE_PASSWORD:}
 
   jpa:
-    database-platform: org.hibernate.dialect.H2Dialect
     hibernate:
-      ddl-auto: update
+      ddl-auto: create-drop
 
   h2:
     console:
@@ -22,6 +21,3 @@ logging:
     one:
       stayfocused:
         backend: DEBUG
-
-server:
-  port: 8077
