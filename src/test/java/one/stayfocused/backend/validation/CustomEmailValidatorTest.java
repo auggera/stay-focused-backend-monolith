@@ -13,8 +13,8 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class CustomEmailValidatorTest {
 
-    CustomEmailValidator validator = new CustomEmailValidator();
-    ConstraintValidatorContext context = Mockito.mock(ConstraintValidatorContext.class);
+    private final CustomEmailValidator validator = new CustomEmailValidator();
+    private final ConstraintValidatorContext context = Mockito.mock(ConstraintValidatorContext.class);
 
     @ParameterizedTest
     @MethodSource(value = "validEmailProvider")

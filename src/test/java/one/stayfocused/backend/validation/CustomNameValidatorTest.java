@@ -12,8 +12,8 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class CustomNameValidatorTest {
 
-    CustomNameValidator validator = new CustomNameValidator();
-    ConstraintValidatorContext context = Mockito.mock(ConstraintValidatorContext.class);
+    private final CustomNameValidator validator = new CustomNameValidator();
+    private final ConstraintValidatorContext context = Mockito.mock(ConstraintValidatorContext.class);
 
     @ParameterizedTest
     @MethodSource(value = "validNameProvider")
