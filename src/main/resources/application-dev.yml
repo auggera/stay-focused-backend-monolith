@@ -1,7 +1,7 @@
 spring:
   datasource:
     driverClassName: org.h2.Driver
-    url: ${SF_MONO_DEV_DATASOURCE_URL:jdbc:h2:mem:stayfocused;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE}
+    url: ${SF_MONO_DEV_DATASOURCE_URL:jdbc:h2:mem:stayfocused;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;MODE=PostgreSQL}
     username: ${SF_MONO_DEV_DATASOURCE_USERNAME:sa}
     password: ${SF_MONO_DEV_DATASOURCE_PASSWORD:}
 

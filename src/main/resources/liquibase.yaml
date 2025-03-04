@@ -1,4 +1,0 @@
-changeLogFile: src/main/resources/db/changelog/changelog-master.yaml
-url: ${SF_MONO_DEV_DATASOURCE_URL:jdbc:h2:mem:stayfocused;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE}
-username: ${SF_MONO_DEV_DATASOURCE_USERNAME:sa}
-password: ${SF_MONO_DEV_DATASOURCE_PASSWORD:}
