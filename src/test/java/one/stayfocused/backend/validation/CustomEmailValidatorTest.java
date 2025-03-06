@@ -33,7 +33,7 @@ class CustomEmailValidatorTest {
     @ParameterizedTest
     @MethodSource(value = "invalidEmailProvider")
     void invalidEmailShouldReturnFalse(String email) {
-        assertFalse(validator.isValid(email, context));
+        assertFalse(validator.isValid(email, context), "Email '" + email + "' should be invalid");
     }
 
     static Stream<Arguments> invalidEmailProvider() {
