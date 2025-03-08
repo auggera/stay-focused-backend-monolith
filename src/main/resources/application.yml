@@ -13,3 +13,11 @@ spring:
 logging:
   level:
     root: INFO
+
+avatars:
+  default:
+    - "uri/my-repo/avatars/avatar1.png"
+    - "uri/my-repo/avatars/avatar2.png"
+    - "uri/my-repo/avatars/avatar3.png"
+    - "uri/my-repo/avatars/avatar4.png"
+    - "uri/my-repo/avatars/avatar5.png"
