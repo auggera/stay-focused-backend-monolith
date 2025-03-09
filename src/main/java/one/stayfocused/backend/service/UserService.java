@@ -1,8 +1,6 @@
 package one.stayfocused.backend.service;
 
 import one.stayfocused.backend.dto.*;
-import one.stayfocused.backend.model.RoleType;
-import org.springframework.web.multipart.MultipartFile;
 
 public interface UserService {
     UserResponseDto getUserById(Long id);

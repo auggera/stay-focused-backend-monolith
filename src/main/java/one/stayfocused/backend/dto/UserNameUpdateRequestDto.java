@@ -4,7 +4,5 @@ import jakarta.validation.constraints.NotBlank;
 import one.stayfocused.backend.validation.ValidName;
 
 public record UserNameUpdateRequestDto(
-        @NotBlank
-        @ValidName
-        String newName
+        @NotBlank @ValidName String newName
 ) {}

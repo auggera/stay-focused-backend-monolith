@@ -1,6 +1,8 @@
 package one.stayfocused.backend.dto;
 
+import jakarta.validation.constraints.NotBlank;
+
 public record UserAvatarUpdateRequestDto(
-        String avatarUrl
+        @NotBlank String avatarUrl
 ) {}
 

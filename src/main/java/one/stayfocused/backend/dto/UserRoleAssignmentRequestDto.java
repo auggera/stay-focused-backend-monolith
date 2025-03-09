@@ -1,8 +1,9 @@
 package one.stayfocused.backend.dto;
 
+import jakarta.validation.constraints.NotNull;
 import one.stayfocused.backend.model.RoleType;
 
 public record UserRoleAssignmentRequestDto(
-        RoleType roleType
+        @NotNull RoleType roleType
 ) {}
 

@@ -1,5 +1,7 @@
 package one.stayfocused.backend.dto;
 
+import jakarta.validation.constraints.NotBlank;
+
 public record PasswordResetRequestDto(
-        String email
+        @NotBlank String email
 ) {}
