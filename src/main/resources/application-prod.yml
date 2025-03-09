@@ -12,6 +12,12 @@ spring:
     console:
       enabled: false
 
+  data:
+    redis:
+      url: ${UPSTASH_REDIS_REST_URL}
+      username: default
+      password: ${UPSTASH_REDIS_REST_TOKEN}
+
 logging:
   level:
     org:
