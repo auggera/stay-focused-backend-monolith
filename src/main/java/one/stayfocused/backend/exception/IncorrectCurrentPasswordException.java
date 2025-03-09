@@ -5,6 +5,6 @@ import org.springframework.http.HttpStatus;
 public class IncorrectCurrentPasswordException extends ApplicationException {
 
     public IncorrectCurrentPasswordException() {
-        super("Incorrect current password", HttpStatus.BAD_REQUEST);
+        super("Incorrect current password", HttpStatus.UNAUTHORIZED);
     }
 }

@@ -9,7 +9,6 @@ import one.stayfocused.backend.validation.*;
 @Data
 public class UserRegisterRequestDto {
 
-    @Schema(description = "User's email address. Can not be null and should be valid.", example = "user@example.com")
     @NotBlank
     @ValidEmail
     private String email;
