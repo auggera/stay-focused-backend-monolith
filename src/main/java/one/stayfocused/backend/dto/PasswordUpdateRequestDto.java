@@ -3,7 +3,6 @@ package one.stayfocused.backend.dto;
 import jakarta.validation.constraints.NotBlank;
 import one.stayfocused.backend.validation.ValidPassword;
 
-public record PasswordUpdateDto(
-    @NotBlank String token,
+public record PasswordUpdateRequestDto(
     @NotBlank @ValidPassword String newPassword
 ) {}
