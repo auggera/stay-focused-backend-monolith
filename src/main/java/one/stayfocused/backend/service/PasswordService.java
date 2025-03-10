@@ -1,9 +1,6 @@
 package one.stayfocused.backend.service;
 
-import one.stayfocused.backend.dto.PasswordChangeWithOtpRequestDto;
-import one.stayfocused.backend.dto.PasswordResetWithOtpRequestDto;
-import one.stayfocused.backend.dto.PasswordVerificationRequestDto;
-import one.stayfocused.backend.dto.PasswordUpdateRequestDto;
+import one.stayfocused.backend.dto.*;
 
 public interface PasswordService {
     void verifyCurrentPassword(Long userId, PasswordVerificationRequestDto request);
@@ -12,6 +9,6 @@ public interface PasswordService {
     void requestChangePasswordWithOtp(Long userId);
     void changePasswordWithOtp(Long userId, PasswordChangeWithOtpRequestDto request);
 
-    void requestResetPasswordWithOtp(String email);
+    void requestResetPasswordWithOtp(PasswordResetRequestDto request);
     void resetPasswordWithOtp(PasswordResetWithOtpRequestDto request);
 }
