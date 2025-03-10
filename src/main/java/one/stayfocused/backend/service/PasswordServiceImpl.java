@@ -41,8 +41,9 @@ public class PasswordServiceImpl implements PasswordService {
         }
 
         String tokenKey = tokenKeyBuilder(userId, OTP_TYPE_PASSWORD_CHANGE);
-        String token = UUID.randomUUID().toString();
+        deleteToken(tokenKey);
 
+        String token = UUID.randomUUID().toString();
         redisTemplate.opsForValue().set(tokenKey, token, TOKEN_EXPIRATION);
     }
 
@@ -51,7 +52,8 @@ public class PasswordServiceImpl implements PasswordService {
         requireNonNull(request, REQUEST_NULL_ERROR_MESSAGE);
         User user =  getUserByIdInternal(userId);
 
-        String token = retrieveToken(userId, OTP_TYPE_PASSWORD_CHANGE);
+        String tokenKey = tokenKeyBuilder(userId, OTP_TYPE_PASSWORD_CHANGE);
+        String token = retrieveToken(tokenKey);
 
         if (token == null) {
             throw new TokenNotFoundException("Token not found or expired");
@@ -60,7 +62,7 @@ public class PasswordServiceImpl implements PasswordService {
         user.setPassword(passwordEncoder.encode(request.newPassword()));
         userRepository.save(user);
 
-        deleteToken(userId, OTP_TYPE_PASSWORD_CHANGE);
+        deleteToken(tokenKey);
     }
 
     @Override
@@ -119,11 +121,11 @@ public class PasswordServiceImpl implements PasswordService {
         return TOKEN_PREFIX + otpType + ":" + userId;
     }
 
-    private String retrieveToken(Long userId, String otpType) {
-        return redisTemplate.opsForValue().get(tokenKeyBuilder(userId, otpType));
+    private String retrieveToken(String tokenKey) {
+        return redisTemplate.opsForValue().get(tokenKey);
     }
 
-    private void deleteToken(Long userId, String otpType) {
-        redisTemplate.delete(tokenKeyBuilder(userId, otpType));
+    private void deleteToken(String tokenKey) {
+        redisTemplate.delete(tokenKey);
     }
 }
