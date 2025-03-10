@@ -11,6 +11,7 @@ import one.stayfocused.backend.repository.UserRepository;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
 import java.util.UUID;
@@ -49,6 +50,7 @@ public class PasswordServiceImpl implements PasswordService {
     }
 
     @Override
+    @Transactional
     public void changePasswordAfterVerification(Long userId, PasswordUpdateRequestDto request) {
         requireNonNull(request, REQUEST_NULL_ERROR_MESSAGE);
         User user =  getUserByIdInternal(userId);
@@ -77,6 +79,7 @@ public class PasswordServiceImpl implements PasswordService {
     }
 
     @Override
+    @Transactional
     public void changePasswordWithOtp(Long userId, PasswordChangeWithOtpRequestDto request) {
         requireNonNull(request, REQUEST_NULL_ERROR_MESSAGE);
         User user = getUserByIdInternal(userId);
@@ -94,6 +97,7 @@ public class PasswordServiceImpl implements PasswordService {
     }
 
     @Override
+    @Transactional
     public void resetPasswordWithOtp(PasswordResetWithOtpRequestDto request) {
         requireNonNull(request, REQUEST_NULL_ERROR_MESSAGE);
         User user = getUserByEmailInternal(request.email());
@@ -111,6 +115,7 @@ public class PasswordServiceImpl implements PasswordService {
         return userRepository.findByEmail(email)
                 .orElseThrow(() -> new UserNotFoundException(email));
     }
+
 
     private void updatePassword(User user, String newPassword) {
         if (passwordEncoder.matches(newPassword, user.getPassword())) {
