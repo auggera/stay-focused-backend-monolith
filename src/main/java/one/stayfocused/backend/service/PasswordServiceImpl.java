@@ -22,7 +22,7 @@ public class PasswordServiceImpl implements PasswordService {
     private static final String TOKEN_PREFIX = "token:";
     private static final String OTP_TYPE_PASSWORD_RESET = "password-reset";
     private static final String OTP_TYPE_PASSWORD_CHANGE = "password-change";
-    private static final String REQUEST_NULL_ERROR_MESSAGE = "Request cannot be null";
+    private static final String REQUEST_NULL_ERROR_MESSAGE = "Request must not be null";
     private static final Duration TOKEN_EXPIRATION = Duration.ofMinutes(5);
 
     private final UserRepository userRepository;
