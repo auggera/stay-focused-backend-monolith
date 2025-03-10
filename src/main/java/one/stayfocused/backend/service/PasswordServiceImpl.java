@@ -3,6 +3,7 @@ package one.stayfocused.backend.service;
 import lombok.RequiredArgsConstructor;
 import one.stayfocused.backend.dto.*;
 import one.stayfocused.backend.exception.IncorrectCurrentPasswordException;
+import one.stayfocused.backend.exception.SamePasswordException;
 import one.stayfocused.backend.exception.TokenNotFoundException;
 import one.stayfocused.backend.exception.UserNotFoundException;
 import one.stayfocused.backend.model.User;
@@ -59,6 +60,10 @@ public class PasswordServiceImpl implements PasswordService {
             throw new TokenNotFoundException("Token not found or expired");
         }
 
+        if (passwordEncoder.matches(request.newPassword(), user.getPassword())) {
+            throw new SamePasswordException();
+        }
+
         user.setPassword(passwordEncoder.encode(request.newPassword()));
         userRepository.save(user);
 
@@ -108,6 +113,10 @@ public class PasswordServiceImpl implements PasswordService {
     }
 
     private void updatePassword(User user, String newPassword) {
+        if (passwordEncoder.matches(newPassword, user.getPassword())) {
+            throw new SamePasswordException();
+        }
+
         user.setPassword(passwordEncoder.encode(newPassword));
         userRepository.save(user);
     }
