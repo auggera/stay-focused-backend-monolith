@@ -62,9 +62,7 @@ public class PasswordServiceImpl implements PasswordService {
             throw new TokenNotFoundException("Token not found or expired");
         }
 
-        if (passwordEncoder.matches(request.newPassword(), user.getPassword())) {
-            throw new SamePasswordException();
-        }
+        isSamePasswordAsCurrent(request.newPassword(), user.getPassword());
 
         user.setPassword(passwordEncoder.encode(request.newPassword()));
         userRepository.save(user);
@@ -85,6 +83,8 @@ public class PasswordServiceImpl implements PasswordService {
         User user = getUserByIdInternal(userId);
 
         otpService.validateOtp(OTP_TYPE_PASSWORD_CHANGE, user.getEmail(), request.otpCode());
+
+        isSamePasswordAsCurrent(request.newPassword(), user.getPassword());
         updatePassword(user, request.newPassword());
     }
 
@@ -103,6 +103,8 @@ public class PasswordServiceImpl implements PasswordService {
         User user = getUserByEmailInternal(request.email());
 
         otpService.validateOtp(OTP_TYPE_PASSWORD_RESET, request.email(), request.otpCode());
+
+        isSamePasswordAsCurrent(request.newPassword(), user.getPassword());
         updatePassword(user, request.newPassword());
     }
 
@@ -118,10 +120,6 @@ public class PasswordServiceImpl implements PasswordService {
 
 
     private void updatePassword(User user, String newPassword) {
-        if (passwordEncoder.matches(newPassword, user.getPassword())) {
-            throw new SamePasswordException();
-        }
-
         user.setPassword(passwordEncoder.encode(newPassword));
         userRepository.save(user);
     }
@@ -141,5 +139,11 @@ public class PasswordServiceImpl implements PasswordService {
 
     private void deleteToken(String tokenKey) {
         redisTemplate.delete(tokenKey);
+    }
+
+    private void isSamePasswordAsCurrent(String newPassword, String currentPassword) {
+        if (passwordEncoder.matches(newPassword, currentPassword)) {
+            throw new SamePasswordException();
+        }
     }
 }
