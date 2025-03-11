@@ -64,7 +64,7 @@ public class PasswordServiceImpl implements PasswordService {
 
         isSamePasswordAsCurrent(request.newPassword(), user.getPassword());
 
-        user.setPassword(passwordEncoder.encode(request.newPassword()));
+        updatePassword(user, request.newPassword());
         userRepository.save(user);
 
         deleteToken(tokenKey);
@@ -86,6 +86,7 @@ public class PasswordServiceImpl implements PasswordService {
 
         isSamePasswordAsCurrent(request.newPassword(), user.getPassword());
         updatePassword(user, request.newPassword());
+        userRepository.save(user);
     }
 
     @Override
@@ -102,10 +103,11 @@ public class PasswordServiceImpl implements PasswordService {
         requireNonNull(request, REQUEST_NULL_ERROR_MESSAGE);
         User user = getUserByEmailInternal(request.email());
 
-        otpService.validateOtp(OTP_TYPE_PASSWORD_RESET, request.email(), request.otpCode());
+        otpService.validateOtp(OTP_TYPE_PASSWORD_RESET, user.getEmail(), request.otpCode());
 
         isSamePasswordAsCurrent(request.newPassword(), user.getPassword());
         updatePassword(user, request.newPassword());
+        userRepository.save(user);
     }
 
     private User getUserByIdInternal(Long userId) {
@@ -121,7 +123,6 @@ public class PasswordServiceImpl implements PasswordService {
 
     private void updatePassword(User user, String newPassword) {
         user.setPassword(passwordEncoder.encode(newPassword));
-        userRepository.save(user);
     }
 
     private void sendOtp(String email, String otpType) {

@@ -1,8 +1,6 @@
 package one.stayfocused.backend.service;
 
-import one.stayfocused.backend.dto.PasswordChangeWithOtpRequestDto;
-import one.stayfocused.backend.dto.PasswordUpdateRequestDto;
-import one.stayfocused.backend.dto.PasswordVerificationRequestDto;
+import one.stayfocused.backend.dto.*;
 import one.stayfocused.backend.exception.*;
 import one.stayfocused.backend.model.User;
 import one.stayfocused.backend.repository.UserRepository;
@@ -34,9 +32,10 @@ class PasswordServiceTest {
     private PasswordService passwordService;
 
     private static final Long USER_ID = 1L;
+    private static final String EMAIL = "john@doe.com";
     private static final String TOKEN_PASSWORD_CHANGE_KEY = "token:password-change:";
-    private static final String OTP_PASSWORD_CHANGE_KEY = "otp:password-change:";
-    private static final String OTP_PASSWORD_RESET_KEY = "otp:password-reset:";
+    private static final String OTP_TYPE_PASSWORD_CHANGE = "password-change";
+    private static final String OTP_TYPE_PASSWORD_RESET = "password-reset";
     private static final String VALID_PASSWORD = "validPassword#123";
     private static final String INVALID_PASSWORD = "invalidPassword";
     private static final String NEW_VALID_PASSWORD = "newValidPassword#123";
@@ -46,7 +45,9 @@ class PasswordServiceTest {
     private static final PasswordVerificationRequestDto VALID_PASSWORD_VERIFICATION_REQUEST_DTO = new PasswordVerificationRequestDto(VALID_PASSWORD);
     private static final PasswordVerificationRequestDto INVALID_PASSWORD_VERIFICATION_REQUEST_DTO = new PasswordVerificationRequestDto(INVALID_PASSWORD);
     private static final PasswordUpdateRequestDto PASSWORD_UPDATE_REQUEST_DTO = new PasswordUpdateRequestDto(NEW_VALID_PASSWORD);
-    private static final PasswordChangeWithOtpRequestDto VALID_PASSWORD_CHANGE_WITH_OTP_REQUEST_DTO = new PasswordChangeWithOtpRequestDto(OTP, NEW_VALID_PASSWORD);
+    private static final PasswordChangeWithOtpRequestDto PASSWORD_CHANGE_WITH_OTP_REQUEST_DTO = new PasswordChangeWithOtpRequestDto(OTP, NEW_VALID_PASSWORD);
+    private static final PasswordResetRequestDto PASSWORD_RESET_REQUEST_DTO = new PasswordResetRequestDto(EMAIL);
+    private static final PasswordResetWithOtpRequestDto PASSWORD_RESET_WITH_OTP_REQUEST_DTO = new PasswordResetWithOtpRequestDto(EMAIL, OTP, NEW_VALID_PASSWORD);
 
     private User user;
 
@@ -56,33 +57,37 @@ class PasswordServiceTest {
 
         user = new User();
         user.setId(USER_ID);
-        user.setEmail("john@doe.com");
+        user.setEmail(EMAIL);
         user.setPassword(HASHED_PASSWORD);
-
-        lenient().doReturn(valueOperations)
-                .when(redisTemplate).opsForValue();
-
     }
 
     @Test
     void testShouldGenerateToken_whenCurrentPasswordIsCorrect() {
-        doReturn(Optional.of(user))
-                .when(userRepository).findById(USER_ID);
+        mockUserFoundById();
 
         doReturn(true)
                 .when(passwordEncoder).matches(VALID_PASSWORD, user.getPassword());
 
+        doReturn(false)
+                .when(redisTemplate).delete(startsWith(TOKEN_PASSWORD_CHANGE_KEY));
+
+        doReturn(valueOperations)
+                .when(redisTemplate).opsForValue();
+
+        doNothing()
+                .when(valueOperations).set(startsWith(TOKEN_PASSWORD_CHANGE_KEY), anyString(), any(Duration.class));
+
         passwordService.verifyCurrentPassword(USER_ID, VALID_PASSWORD_VERIFICATION_REQUEST_DTO);
 
-
+        verify(passwordEncoder).matches(VALID_PASSWORD_VERIFICATION_REQUEST_DTO.currentPassword(), user.getPassword());
+        verify(redisTemplate).delete(startsWith(TOKEN_PASSWORD_CHANGE_KEY));
         verify(redisTemplate).opsForValue();
         verify(valueOperations).set(startsWith(TOKEN_PASSWORD_CHANGE_KEY), anyString(), any(Duration.class));
     }
 
     @Test
     void testShouldThrowIncorrectCurrentPasswordException_whenCurrentPasswordIsIncorrect() {
-        doReturn(Optional.of(user))
-                .when(userRepository).findById(USER_ID);
+        mockUserFoundById();
 
         assertThrows(IncorrectCurrentPasswordException.class,
                 () -> passwordService.verifyCurrentPassword(USER_ID, INVALID_PASSWORD_VERIFICATION_REQUEST_DTO)
@@ -91,8 +96,7 @@ class PasswordServiceTest {
 
     @Test
     void testShouldThrowUserNotFoundException_whenVerifyCurrentPassword_andUserDoesNotExists() {
-        doReturn(Optional.empty())
-                .when(userRepository).findById(USER_ID);
+        mockUserNotFoundById();
 
         assertThrows(UserNotFoundException.class,
                 () -> passwordService.verifyCurrentPassword(USER_ID, VALID_PASSWORD_VERIFICATION_REQUEST_DTO)
@@ -108,14 +112,15 @@ class PasswordServiceTest {
 
     @Test
     void testShouldChangePassword_whenTokenAndPasswordAreValid() {
-        doReturn(Optional.of(user))
-                .when(userRepository).findById(USER_ID);
+        mockUserFoundById();
+
+        doReturn(valueOperations)
+                .when(redisTemplate).opsForValue();
 
         doReturn("mocked-token")
                 .when(valueOperations).get(startsWith(TOKEN_PASSWORD_CHANGE_KEY));
 
-        doReturn(false)
-                .when(passwordEncoder).matches(NEW_VALID_PASSWORD, user.getPassword());
+        mockPasswordMatching(false);
 
         doReturn(NEW_HASHED_PASSWORD)
                 .when(passwordEncoder).encode(NEW_VALID_PASSWORD);
@@ -130,8 +135,7 @@ class PasswordServiceTest {
 
     @Test
     void testShouldThrowUserNotFoundException_whenPasswordUpdate_andUserDoesNotExists() {
-        doReturn(Optional.empty())
-            .when(userRepository).findById(USER_ID);
+        mockUserNotFoundById();
 
         assertThrows(UserNotFoundException.class,
                 ()  -> passwordService.changePasswordAfterVerification(USER_ID, PASSWORD_UPDATE_REQUEST_DTO)
@@ -147,8 +151,10 @@ class PasswordServiceTest {
 
     @Test
     void testShouldThrowTokenNotFoundException_whenPasswordUpdate_andTokenDoesNotExists() {
-        doReturn(Optional.of(user))
-                .when(userRepository).findById(USER_ID);
+        mockUserFoundById();
+
+        doReturn(valueOperations)
+                .when(redisTemplate).opsForValue();
 
         doReturn(null)
                 .when(valueOperations).get(startsWith(TOKEN_PASSWORD_CHANGE_KEY));
@@ -160,14 +166,15 @@ class PasswordServiceTest {
 
     @Test
     void testShouldThrowSamePasswordException_whenPasswordUpdate_andNewPasswordIsSame() {
-        doReturn(Optional.of(user))
-                .when(userRepository).findById(USER_ID);
+        mockUserFoundById();
+
+        doReturn(valueOperations)
+                .when(redisTemplate).opsForValue();
 
         doReturn("mocked-token")
                 .when(valueOperations).get(startsWith(TOKEN_PASSWORD_CHANGE_KEY));
 
-        doReturn(true)
-                .when(passwordEncoder).matches(NEW_VALID_PASSWORD, user.getPassword());
+        mockPasswordMatching(true);
 
         assertThrows(SamePasswordException.class,
                 () -> passwordService.changePasswordAfterVerification(USER_ID, PASSWORD_UPDATE_REQUEST_DTO)
@@ -176,20 +183,17 @@ class PasswordServiceTest {
 
     @Test
     void testShouldSendOtp_whenRequestChangePasswordWithOtp() {
-        final String otpType = "password-change";
-
-        doReturn(Optional.of(user))
-                .when(userRepository).findById(USER_ID);
+        mockUserFoundById();
 
         doReturn(OTP)
-                .when(otpService).generateOtp(otpType, user.getEmail());
+                .when(otpService).generateOtp(OTP_TYPE_PASSWORD_CHANGE, user.getEmail());
 
         doNothing()
                 .when(emailService).sendOtp(user.getEmail(), OTP);
 
         passwordService.requestChangePasswordWithOtp(USER_ID);
 
-        verify(otpService).generateOtp(otpType, user.getEmail());
+        verify(otpService).generateOtp(OTP_TYPE_PASSWORD_CHANGE, user.getEmail());
         verify(emailService).sendOtp(user.getEmail(), OTP);
     }
 
@@ -202,27 +206,161 @@ class PasswordServiceTest {
 
     @Test
     void testShouldChangePasswordWithOtp_whenOtpIsValid() {
-        final String otpType = "password-change";
-
-        doReturn(Optional.of(user))
-                .when(userRepository).findById(USER_ID);
+        mockUserFoundById();
 
         doNothing()
-                .when(otpService).validateOtp(otpType, user.getEmail(), OTP);
+                .when(otpService).validateOtp(OTP_TYPE_PASSWORD_CHANGE, user.getEmail(), OTP);
 
-        doReturn(false)
-                .when(passwordEncoder).matches(NEW_VALID_PASSWORD, user.getPassword());
+        mockPasswordMatching(false);
 
         System.out.println(user.getPassword());
 
         doReturn(NEW_HASHED_PASSWORD)
                 .when(passwordEncoder).encode(NEW_VALID_PASSWORD);
 
-        passwordService.changePasswordWithOtp(USER_ID, VALID_PASSWORD_CHANGE_WITH_OTP_REQUEST_DTO);
+        passwordService.changePasswordWithOtp(USER_ID, PASSWORD_CHANGE_WITH_OTP_REQUEST_DTO);
 
-        verify(otpService).validateOtp(otpType, user.getEmail(), OTP);
+        verify(otpService).validateOtp(OTP_TYPE_PASSWORD_CHANGE, user.getEmail(), OTP);
         verify(passwordEncoder).matches(NEW_VALID_PASSWORD, HASHED_PASSWORD);
         verify(passwordEncoder).encode(NEW_VALID_PASSWORD);
         verify(userRepository).save(user);
+    }
+
+    @Test
+    void testShouldThrowNullPointerException_whenPasswordChangeWithOtpRequestIsNull() {
+        assertThrows(NullPointerException.class,
+                () -> passwordService.changePasswordWithOtp(USER_ID, null)
+        );
+    }
+
+    @Test
+    void testShouldThrowUserNotFoundException_whenPasswordChangeWithOtp_andUserDoesNotExists() {
+        mockUserNotFoundById();
+
+        assertThrows(UserNotFoundException.class,
+                () -> passwordService.changePasswordWithOtp(USER_ID, PASSWORD_CHANGE_WITH_OTP_REQUEST_DTO)
+        );
+    }
+
+    @Test
+    void testShouldThrowSamePasswordException_whenPasswordChangeWithOtp_andNewPasswordIsSame() {
+        mockUserFoundById();
+
+        doNothing()
+                .when(otpService).validateOtp(OTP_TYPE_PASSWORD_CHANGE, user.getEmail(), OTP);
+
+        mockPasswordMatching(true);
+
+        assertThrows(SamePasswordException.class,
+                () -> passwordService.changePasswordWithOtp(USER_ID, PASSWORD_CHANGE_WITH_OTP_REQUEST_DTO)
+        );
+    }
+
+    @Test
+    void testShouldSendOtp_whenPasswordResetRequestIsValid() {
+        mockUserFoundByEmail();
+
+        doReturn(OTP)
+                .when(otpService).generateOtp(OTP_TYPE_PASSWORD_RESET, user.getEmail());
+
+        doNothing()
+                .when(emailService).sendOtp(user.getEmail(), OTP);
+
+        passwordService.requestResetPasswordWithOtp(PASSWORD_RESET_REQUEST_DTO);
+
+        verify(userRepository).findByEmail(PASSWORD_RESET_REQUEST_DTO.email());
+        verify(otpService).generateOtp(OTP_TYPE_PASSWORD_RESET, user.getEmail());
+        verify(emailService).sendOtp(user.getEmail(), OTP);
+    }
+
+    @Test
+    void testShouldThrowNullPointerException_whenPasswordResetRequestIsNull() {
+        assertThrows(NullPointerException.class,
+                () -> passwordService.requestResetPasswordWithOtp(null)
+        );
+    }
+
+    @Test
+    void testShouldThrowUserNotFoundException_whenPasswordResetRequest_andUserDoesNotExists() {
+        mockUserNotFoundByEmail();
+
+        assertThrows(UserNotFoundException.class,
+                () -> passwordService.requestResetPasswordWithOtp(PASSWORD_RESET_REQUEST_DTO)
+        );
+    }
+
+    @Test
+    void testShouldResetPassword_whenPasswordResetWithOtpRequestIsValid() {
+        mockUserFoundByEmail();
+
+        doNothing()
+                .when(otpService).validateOtp(OTP_TYPE_PASSWORD_RESET, user.getEmail(), OTP);
+
+        mockPasswordMatching(false);
+
+        doReturn(NEW_HASHED_PASSWORD)
+                .when(passwordEncoder).encode(NEW_VALID_PASSWORD);
+
+        passwordService.resetPasswordWithOtp(PASSWORD_RESET_WITH_OTP_REQUEST_DTO);
+
+        verify(userRepository).findByEmail(PASSWORD_RESET_WITH_OTP_REQUEST_DTO.email());
+        verify(otpService).validateOtp(OTP_TYPE_PASSWORD_RESET, user.getEmail(), OTP);
+        verify(passwordEncoder).matches(NEW_VALID_PASSWORD, HASHED_PASSWORD);
+        verify(passwordEncoder).encode(NEW_VALID_PASSWORD);
+        verify(userRepository).save(user);
+    }
+
+    @Test
+    void testShouldThrowNullPointerException_whenPasswordResetWithOtpRequestIsNull() {
+        assertThrows(NullPointerException.class,
+                () -> passwordService.resetPasswordWithOtp(null)
+        );
+    }
+
+    @Test
+    void testShouldThrowUserNotFoundException_whenPasswordResetWithOtp_andUserDoesNotExists() {
+        mockUserNotFoundByEmail();
+
+        assertThrows(UserNotFoundException.class,
+                () ->  passwordService.resetPasswordWithOtp(PASSWORD_RESET_WITH_OTP_REQUEST_DTO)
+        );
+    }
+
+    @Test
+    void testShouldThrowSamePasswordException_whenPasswordResetWithOtp_andNewPasswordIsSame() {
+        mockUserFoundByEmail();
+
+        doNothing()
+                .when(otpService).validateOtp(OTP_TYPE_PASSWORD_RESET, user.getEmail(), OTP);
+
+        mockPasswordMatching(true);
+
+        assertThrows(SamePasswordException.class,
+                () -> passwordService.resetPasswordWithOtp(PASSWORD_RESET_WITH_OTP_REQUEST_DTO));
+    }
+
+    private void mockUserFoundById() {
+        doReturn(Optional.of(user))
+                .when(userRepository).findById(USER_ID);
+    }
+
+    private void mockUserNotFoundById() {
+        doReturn(Optional.empty())
+                .when(userRepository).findById(USER_ID);
+    }
+
+    private void mockUserFoundByEmail() {
+        doReturn(Optional.of(user))
+                .when(userRepository).findByEmail(EMAIL);
+    }
+
+    private void mockUserNotFoundByEmail() {
+        doReturn(Optional.empty())
+                .when(userRepository).findByEmail(EMAIL);
+    }
+
+    private void mockPasswordMatching(boolean matches) {
+        doReturn(matches)
+                .when(passwordEncoder).matches(NEW_VALID_PASSWORD, HASHED_PASSWORD);
     }
 }
