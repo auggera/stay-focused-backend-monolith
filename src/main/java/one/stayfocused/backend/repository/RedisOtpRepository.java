@@ -69,7 +69,7 @@ public class RedisOtpRepository implements OtpRepository {
     public Duration getOtpExpiration(String otpType) {
         return switch (otpType) {
             case "password-reset", "password-change", "email-confirm" -> Duration.ofMinutes(5);
-            default -> Duration.ofMinutes(10);
+            default -> Duration.ofMinutes(2);
         };
     }
 
