@@ -1,4 +1,4 @@
-package one.stayfocused.backend.service;
+package one.stayfocused.backend.service.otp;
 
 import lombok.RequiredArgsConstructor;
 import one.stayfocused.backend.exception.InvalidOtpException;
@@ -9,11 +9,12 @@ import org.springframework.stereotype.Service;
 
 @RequiredArgsConstructor
 @Service
-public class OtpValidationService {
+public class OtpValidationService implements OtpValidator {
 
     private final OtpRepository otpRepository;
     private final OtpRateLimiter otpRateLimiterService;
 
+    @Override
     public void validateOtp(String otpType, String identifier, String otp) {
         if (otpRateLimiterService.isBlocked(otpType, identifier)) {
             throw new OtpBlockedException();
