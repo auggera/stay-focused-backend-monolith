@@ -1,4 +1,4 @@
-package one.stayfocused.backend.service;
+package one.stayfocused.backend.service.otp;
 
 import lombok.RequiredArgsConstructor;
 import one.stayfocused.backend.repository.OtpRepository;

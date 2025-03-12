@@ -1,4 +1,4 @@
-package one.stayfocused.backend.service;
+package one.stayfocused.backend.service.otp;
 
 public interface OtpRateLimiter {
     boolean isBlocked(String otpType, String identifier);
