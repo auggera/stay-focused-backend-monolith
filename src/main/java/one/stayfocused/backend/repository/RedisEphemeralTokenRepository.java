@@ -31,5 +31,4 @@ public class RedisEphemeralTokenRepository implements EphemeralTokenRepository {
     private String buildTokenKey(String tokenType, String identifier) {
         return TOKEN_PREFIX + tokenType + ":" + identifier;
     }
-
 }
