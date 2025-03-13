@@ -2,6 +2,7 @@ package one.stayfocused.backend.service.password;
 
 import lombok.RequiredArgsConstructor;
 import one.stayfocused.backend.dto.*;
+import one.stayfocused.backend.exception.IncorrectCurrentPasswordException;
 import one.stayfocused.backend.exception.SamePasswordException;
 import one.stayfocused.backend.exception.TokenNotFoundException;
 import one.stayfocused.backend.exception.UserNotFoundException;
@@ -35,7 +36,7 @@ public class PasswordServiceImpl implements PasswordService {
         User user = getUserByIdInternal(userId);
 
         if (!isSamePasswordAsCurrent(request.currentPassword(), user.getPassword())) {
-            throw new SamePasswordException();
+            throw new IncorrectCurrentPasswordException();
         }
 
         tokenRepository.deleteToken(TOKEN_TYPE_PASSWORD_CHANGE, user.getEmail());
