@@ -46,7 +46,10 @@ public class PasswordOtpServiceImpl implements PasswordOtpService {
 
         otpValidator.validateOtp(OTP_TYPE_PASSWORD_CHANGE, user.getEmail(), request.otpCode());
 
-        isSamePasswordAsCurrent(request.newPassword(), user.getPassword());
+        if (isSamePasswordAsCurrent(request.newPassword(), user.getPassword())) {
+            throw new SamePasswordException();
+        }
+
         updatePassword(user, request.newPassword());
         userRepository.save(user);
     }
@@ -67,7 +70,10 @@ public class PasswordOtpServiceImpl implements PasswordOtpService {
 
         otpValidator.validateOtp(OTP_TYPE_PASSWORD_RESET, user.getEmail(), request.otpCode());
 
-        isSamePasswordAsCurrent(request.newPassword(), user.getPassword());
+        if (isSamePasswordAsCurrent(request.newPassword(), user.getPassword())) {
+            throw new SamePasswordException();
+        }
+
         updatePassword(user, request.newPassword());
         userRepository.save(user);
     }
@@ -92,9 +98,7 @@ public class PasswordOtpServiceImpl implements PasswordOtpService {
         emailService.sendOtp(email, otp);
     }
 
-    private void isSamePasswordAsCurrent(String newPassword, String currentPassword) {
-        if (passwordEncoder.matches(newPassword, currentPassword)) {
-            throw new SamePasswordException();
-        }
+    private boolean isSamePasswordAsCurrent(String newPassword, String currentPassword) {
+        return passwordEncoder.matches(newPassword, currentPassword);
     }
 }
