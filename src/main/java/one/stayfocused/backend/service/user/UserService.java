@@ -1,4 +1,4 @@
-package one.stayfocused.backend.service;
+package one.stayfocused.backend.service.user;
 
 import one.stayfocused.backend.dto.*;
 

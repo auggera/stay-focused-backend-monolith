@@ -1,4 +1,4 @@
-package one.stayfocused.backend.service;
+package one.stayfocused.backend.service.password;
 
 import lombok.RequiredArgsConstructor;
 import one.stayfocused.backend.dto.*;
@@ -8,6 +8,7 @@ import one.stayfocused.backend.exception.TokenNotFoundException;
 import one.stayfocused.backend.exception.UserNotFoundException;
 import one.stayfocused.backend.model.User;
 import one.stayfocused.backend.repository.UserRepository;
+import one.stayfocused.backend.service.EmailService;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
