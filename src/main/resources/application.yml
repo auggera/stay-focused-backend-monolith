@@ -21,3 +21,8 @@ avatars:
     - "uri/my-repo/avatars/avatar3.png"
     - "uri/my-repo/avatars/avatar4.png"
     - "uri/my-repo/avatars/avatar5.png"
+
+cloudinary:
+  cloud-name: ${SF_MONO_CLOUDINARY_CLOUD_NAME}
+  api-key: ${SF_MONO_CLOUDINARY_API_KEY}
+  api-secret: ${SF_MONO_CLOUDINARY_API_SECRET}

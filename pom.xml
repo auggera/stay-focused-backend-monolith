@@ -30,6 +30,7 @@
 		<java.version>21</java.version>
 		<liquibase.version>4.31.1</liquibase.version>
 		<org.mapstruct.version>1.6.3</org.mapstruct.version>
+		<com.cloudinary.version>2.2.0</com.cloudinary.version>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -120,7 +121,11 @@
 			<artifactId>junit</artifactId>
 			<scope>test</scope>
 		</dependency>
-
+		<dependency>
+			<groupId>com.cloudinary</groupId>
+			<artifactId>cloudinary-http5</artifactId>
+			<version>${com.cloudinary.version}</version>
+		</dependency>
 	</dependencies>
 
 	<build>
