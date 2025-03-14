@@ -7,6 +7,7 @@ import one.stayfocused.backend.repository.OtpRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -18,17 +19,11 @@ class OtpValidationServiceTest {
 
     @Mock private  OtpRepository otpRepository;
     @Mock private  OtpRateLimiter otpRateLimiterService;
-
-    OtpValidator otpValidationService;
+    @InjectMocks private OtpValidationService otpValidationService;
 
     private static final String OTP_TYPE = "otp-type";
     private static final String IDENTIFIER = "identifier";
     private static final String OTP = "123456";
-
-    @BeforeEach
-    void setUp() {
-        otpValidationService = new OtpValidationService(otpRepository, otpRateLimiterService);
-    }
 
     @Test
     void shouldValidateOtp_whenOtpIsValid() {

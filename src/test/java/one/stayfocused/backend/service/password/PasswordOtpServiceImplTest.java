@@ -13,6 +13,7 @@ import one.stayfocused.backend.service.otp.OtpValidator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -24,15 +25,14 @@ import static org.mockito.Mockito.*;
 import static org.mockito.Mockito.doReturn;
 
 @ExtendWith(MockitoExtension.class)
-class PasswordOtpServiceTest {
+class PasswordOtpServiceImplTest {
 
     @Mock private UserRepository userRepository;
     @Mock private OtpGenerator otpGenerator;
     @Mock private OtpValidator otpValidator;
     @Mock private EmailService emailService;
     @Mock private PasswordEncoder passwordEncoder;
-
-    private PasswordOtpService passwordOtpService;
+    @InjectMocks private PasswordOtpServiceImpl passwordOtpService;
 
     private static final Long USER_ID = 1L;
     private static final String EMAIL = "john@doe.com";
@@ -51,10 +51,6 @@ class PasswordOtpServiceTest {
 
     @BeforeEach
     void setUp() {
-        passwordOtpService = new PasswordOtpServiceImpl(
-                userRepository, otpGenerator, otpValidator, emailService, passwordEncoder
-        );
-
         user = new User();
         user.setId(USER_ID);
         user.setEmail(EMAIL);

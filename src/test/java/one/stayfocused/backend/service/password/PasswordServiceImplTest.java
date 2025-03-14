@@ -8,6 +8,7 @@ import one.stayfocused.backend.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -19,13 +20,12 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class PasswordServiceTest {
+class PasswordServiceImplTest {
 
     @Mock private UserRepository userRepository;
     @Mock private EphemeralTokenRepository tokenRepository;
     @Mock private PasswordEncoder passwordEncoder;
-
-    private PasswordService passwordService;
+    @InjectMocks private PasswordServiceImpl passwordService;
 
     private static final Long USER_ID = 1L;
     private static final String EMAIL = "john@doe.com";
@@ -44,8 +44,6 @@ class PasswordServiceTest {
 
     @BeforeEach
     void setUp() {
-        passwordService = new PasswordServiceImpl(userRepository, tokenRepository, passwordEncoder);
-
         user = new User();
         user.setId(USER_ID);
         user.setEmail(EMAIL);

@@ -1,9 +1,9 @@
 package one.stayfocused.backend.service.otp;
 
 import one.stayfocused.backend.repository.OtpRepository;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -13,28 +13,23 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class OtpRateLimiterTest {
+class OtpRateLimitServiceTest {
 
     @Mock private OtpRepository otpRepository;
 
-    private OtpRateLimiter otpRateLimiterService;
+    @InjectMocks private OtpRateLimitService otpRateLimitService;
 
     private static final String OTP_TYPE = "otp-type";
     private static final String IDENTIFIER = "identifier";
     private static final Duration BLOCK_DURATION = Duration.ofMinutes(10);
     private static final Duration REQUEST_LIMIT_DURATION = Duration.ofDays(1);
 
-    @BeforeEach
-    public void setUp() {
-        otpRateLimiterService = new OtpRateLimitService(otpRepository);
-    }
-
     @Test
     void testShouldReturnFalse_whenFailedAttemptsAreLessThanMaxAttempts() {
         doReturn(4)
                 .when(otpRepository).getFailedAttempts(OTP_TYPE, IDENTIFIER);
 
-        boolean result = otpRateLimiterService.isBlocked(OTP_TYPE, IDENTIFIER);
+        boolean result = otpRateLimitService.isBlocked(OTP_TYPE, IDENTIFIER);
 
         assertFalse(result);
     }
@@ -44,7 +39,7 @@ class OtpRateLimiterTest {
         doReturn(5)
                 .when(otpRepository).getFailedAttempts(OTP_TYPE, IDENTIFIER);
 
-        boolean result = otpRateLimiterService.isBlocked(OTP_TYPE, IDENTIFIER);
+        boolean result = otpRateLimitService.isBlocked(OTP_TYPE, IDENTIFIER);
 
         assertTrue(result);
     }
@@ -54,7 +49,7 @@ class OtpRateLimiterTest {
         doReturn(7)
                 .when(otpRepository).getRequestCount(OTP_TYPE, IDENTIFIER);
 
-        boolean result = otpRateLimiterService.isRequestLimitExceeded(OTP_TYPE, IDENTIFIER);
+        boolean result = otpRateLimitService.isRequestLimitExceeded(OTP_TYPE, IDENTIFIER);
 
         assertFalse(result);
     }
@@ -64,7 +59,7 @@ class OtpRateLimiterTest {
         doReturn(10)
                 .when(otpRepository).getRequestCount(OTP_TYPE, IDENTIFIER);
 
-        boolean result = otpRateLimiterService.isRequestLimitExceeded(OTP_TYPE, IDENTIFIER);
+        boolean result = otpRateLimitService.isRequestLimitExceeded(OTP_TYPE, IDENTIFIER);
 
         assertTrue(result);
     }
@@ -74,7 +69,7 @@ class OtpRateLimiterTest {
         doNothing()
                 .when(otpRepository).incrementFailedAttempts(OTP_TYPE, IDENTIFIER, BLOCK_DURATION);
 
-        otpRateLimiterService.incrementFailedAttempts(OTP_TYPE, IDENTIFIER);
+        otpRateLimitService.incrementFailedAttempts(OTP_TYPE, IDENTIFIER);
 
         verify(otpRepository).incrementFailedAttempts(OTP_TYPE, IDENTIFIER, BLOCK_DURATION);
     }
@@ -84,7 +79,7 @@ class OtpRateLimiterTest {
         doNothing()
                 .when(otpRepository).incrementRequestCount(OTP_TYPE, IDENTIFIER, REQUEST_LIMIT_DURATION);
 
-        otpRateLimiterService.incrementOtpRequestCount(OTP_TYPE, IDENTIFIER);
+        otpRateLimitService.incrementOtpRequestCount(OTP_TYPE, IDENTIFIER);
 
         verify(otpRepository).incrementRequestCount(OTP_TYPE, IDENTIFIER, REQUEST_LIMIT_DURATION);
     }

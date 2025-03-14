@@ -2,10 +2,10 @@ package one.stayfocused.backend.service.otp;
 
 import one.stayfocused.backend.exception.OtpRequestLimitExceededException;
 import one.stayfocused.backend.repository.OtpRepository;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -15,21 +15,15 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class OtpGeneratorTest {
+class OtpGeneratorServiceTest {
 
     @Mock private OtpRepository otpRepository;
     @Mock private OtpRateLimiter otpRateLimiterService;
-
-    private OtpGenerator otpGeneratorService;
+    @InjectMocks private OtpGeneratorService otpGeneratorService;
 
     private static final String OTP_TYPE = "otp-type";
     private static final String IDENTIFIER = "identifier";
     private static final Duration EXPIRATION = Duration.ofMinutes(5);
-
-    @BeforeEach
-    void setUp() {
-        otpGeneratorService = new OtpGeneratorService(otpRepository, otpRateLimiterService);
-    }
 
     @Test
     void testShouldGenerateOtp_whenRequestLimitNotExceeded() {
