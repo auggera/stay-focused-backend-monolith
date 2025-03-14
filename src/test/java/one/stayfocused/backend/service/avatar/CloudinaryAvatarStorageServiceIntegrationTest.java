@@ -1,0 +1,42 @@
+package one.stayfocused.backend.service.avatar;
+
+import one.stayfocused.backend.exception.AvatarUploadException;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+@SpringBootTest
+@ActiveProfiles("test")
+class CloudinaryAvatarStorageServiceIntegrationTest {
+
+    @Autowired
+    private CloudinaryAvatarStorageService cloudinaryAvatarStorageService;
+
+    @Test
+    void uploadAvatar_ShouldUploadSuccessfully() throws AvatarUploadException, IOException {
+        Long userId = 1L;
+
+        File file = new File("src/test/resources/test-avatar.jpg");
+        MultipartFile multipartFile = new MockMultipartFile(
+                "avatar.jpg",
+                file.getName(),
+                "image/jpeg",
+                Files.readAllBytes(file.toPath())
+        );
+
+        String uploadedUrl = cloudinaryAvatarStorageService.uploadAvatar(userId, multipartFile);
+
+        assertNotNull(uploadedUrl);
+        assertTrue(uploadedUrl.startsWith("https://res.cloudinary.com/"));
+        System.out.println("Avatar successfully uploaded: " + uploadedUrl);
+    }
+}
