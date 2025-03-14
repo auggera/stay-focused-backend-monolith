@@ -3,6 +3,8 @@ package one.stayfocused.backend.service.avatar;
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import one.stayfocused.backend.exception.AvatarUploadException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -10,6 +12,7 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.UUID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class CloudinaryAvatarStorageService implements AvatarStorageService {
@@ -29,7 +32,8 @@ public class CloudinaryAvatarStorageService implements AvatarStorageService {
             ));
             return (String) uploadResult.get("secure_url");
         } catch (IOException e) {
-            throw new RuntimeException("Failed to upload avatar to Cloudinary", e);
+            log.error("Failed to upload avatar to Cloudinary. {}", e.getMessage(), e);
+            throw new AvatarUploadException("Failed to upload avatar to Cloudinary");
         }
     }
 
