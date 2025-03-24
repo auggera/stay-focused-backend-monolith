@@ -12,6 +12,7 @@ spring:
 
 logging:
   level:
+    liquibase: off
     root: INFO
 
 avatars:
