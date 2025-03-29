@@ -37,6 +37,16 @@ public class CloudinaryAvatarStorageService implements AvatarStorageService {
         }
     }
 
+    @Override
+    public void deleteAvatar(String avatarUrl) {
+
+    }
+
+    @Override
+    public StorageType getStorageType() {
+        return null;
+    }
+
     private String buildPublicId(Long userId) {
         return AVATARS_PATH + "user_" + userId + "_" + UUID.randomUUID();
     }
