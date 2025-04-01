@@ -2,12 +2,8 @@ package one.stayfocused.backend.model;
 
 import jakarta.persistence.*;
 import lombok.Data;
-import one.stayfocused.backend.config.AvatarConfig;
 
-import java.net.Authenticator;
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Random;
 
 @Entity
 @Table(name = "users")

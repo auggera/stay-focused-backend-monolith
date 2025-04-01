@@ -15,6 +15,12 @@ logging:
     liquibase: off
     root: INFO
 
+storage:
+  avatar:
+    type: CLOUDINARY
+#  audio:
+#    type: S3
+
 avatars:
   default:
     - "uri/my-repo/avatars/avatar1.png"
@@ -22,8 +28,6 @@ avatars:
     - "uri/my-repo/avatars/avatar3.png"
     - "uri/my-repo/avatars/avatar4.png"
     - "uri/my-repo/avatars/avatar5.png"
-    -
-  storage-type: CLOUDINARY
 
 cloudinary:
   cloud-name: ${SF_MONO_CLOUDINARY_CLOUD_NAME}
