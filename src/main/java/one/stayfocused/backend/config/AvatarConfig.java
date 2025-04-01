@@ -1,7 +1,7 @@
 package one.stayfocused.backend.config;
 
 import lombok.Getter;
-import one.stayfocused.backend.storage.StorageType;
+import one.stayfocused.backend.service.avatar.StorageType;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
