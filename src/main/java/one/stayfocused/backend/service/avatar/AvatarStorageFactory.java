@@ -1,5 +1,6 @@
 package one.stayfocused.backend.service.avatar;
 
+import one.stayfocused.backend.storage.StorageType;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
