@@ -4,15 +4,18 @@ import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import one.stayfocused.backend.exception.AvatarDeletionException;
 import one.stayfocused.backend.exception.AvatarUploadException;
 import one.stayfocused.backend.storage.ResourceType;
 import one.stayfocused.backend.storage.StoragePathBuilder;
+import one.stayfocused.backend.storage.StoragePathResolver;
 import one.stayfocused.backend.storage.StorageType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.Objects;
 
 @Slf4j
 @Service
@@ -21,6 +24,7 @@ public class CloudinaryAvatarStorageService implements AvatarStorageService {
 
     private final StoragePathBuilder pathBuilder;
     private final Cloudinary cloudinary;
+    private final StoragePathResolver storagePathResolver;
 
     @Override
     public String uploadAvatar(Long userId, MultipartFile file) {
@@ -38,7 +42,37 @@ public class CloudinaryAvatarStorageService implements AvatarStorageService {
     }
 
     @Override
+    public void deleteAvatar(String avatarUrl) {
+        String publicId = extractPublicId(avatarUrl);
+
+        try {
+            Map<?, ?> result = cloudinary.uploader().destroy(publicId, ObjectUtils.asMap(
+                    "resource_type", "image"
+            ));
+
+            Object status = result.get("result");
+
+            if (!Objects.equals("ok", status)) {
+                log.warn("Cloudinary returned non-ok status while deleting avatar: {}", status);
+            }
+        } catch (IOException e) {
+            log.error("Failed to delete avatar from Cloudinary. {}", e.getMessage(), e);
+            throw new AvatarDeletionException("Failed to delete avatar from Cloudinary");
+        }
+    }
+
+    @Override
     public StorageType getStorageType() {
         return StorageType.CLOUDINARY;
     }
+
+    private String extractPublicId(String resourceUrl) {
+        return storagePathResolver.resolveFull(resourceUrl)
+                .map(parts -> String.format("%s/%s/%s_%d",
+                        parts.resourceRaw(),
+                        parts.storageRaw(),
+                        parts.ownerLabel(),
+                        parts.ownerId()))
+                .orElseThrow(() -> new AvatarDeletionException("Invalid avatar URL: cannot extract public_id"));
+        }
 }
