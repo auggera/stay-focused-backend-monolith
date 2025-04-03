@@ -9,7 +9,8 @@ import java.util.Optional;
 @Getter
 @RequiredArgsConstructor
 public enum StorageType {
-    LOCAL("local"), CLOUDINARY("cloudinary");
+    LOCAL("local"),
+    CLOUDINARY("cloudinary");
 
     private final String alias;
 
