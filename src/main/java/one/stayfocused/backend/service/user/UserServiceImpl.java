@@ -1,15 +1,22 @@
 package one.stayfocused.backend.service.user;
 
 import lombok.RequiredArgsConstructor;
+import one.stayfocused.backend.config.AvatarConfig;
+import one.stayfocused.backend.config.StorageConfig;
 import one.stayfocused.backend.dto.*;
 import one.stayfocused.backend.exception.*;
 import one.stayfocused.backend.mapper.UserMapper;
 import one.stayfocused.backend.model.*;
 import one.stayfocused.backend.repository.*;
+import one.stayfocused.backend.service.avatar.AvatarStorageFactory;
 import one.stayfocused.backend.service.avatar.AvatarStorageService;
-import org.springframework.beans.factory.annotation.Qualifier;
+import one.stayfocused.backend.storage.StoragePathResolver;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Objects;
+import java.util.Optional;
 
 import static java.util.Objects.requireNonNull;
 
@@ -19,11 +26,21 @@ public class UserServiceImpl implements UserService {
 
     private static final String REQUEST_NULL_ERROR_MESSAGE = "Request must not be null";
 
-    private final AvatarStorageService avatarStorageService;
+    private final AvatarStorageFactory avatarStorageFactory;
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final UserRoleRepository userRoleRepository;
     private final UserMapper userMapper;
+    private final AvatarConfig avatarConfig;
+    private final StorageConfig storageConfig;
+    private final StoragePathResolver storagePathResolver;
+
+    /**
+     * A proxy for calling transactional methods within the current class.
+     * Used to ensure @Transactional works for internal calls.
+     */
+    @Lazy
+    private final UserService self;
 
     @Override
     @Transactional(readOnly = true)
@@ -58,8 +75,15 @@ public class UserServiceImpl implements UserService {
     public UserResponseDto updateAvatar(Long id, UserAvatarUpdateRequestDto request) {
         requireNonNull(request, REQUEST_NULL_ERROR_MESSAGE);
         User user = getUserByIdInternal(id);
+        String currentAvatarUrl = user.getAvatarUrl();
+        String newAvatarUrl = request.avatarUrl();
 
-        user.setAvatarUrl(request.avatarUrl());
+        if (shouldDeleteCurrentAvatar(currentAvatarUrl, newAvatarUrl)) {
+            resolveAvatarStorageService(currentAvatarUrl)
+                    .ifPresent(service -> service.deleteAvatar(currentAvatarUrl));
+        }
+
+        user.setAvatarUrl(newAvatarUrl);
         return  userMapper.toUserResponseDto(userRepository.save(user));
     }
 
@@ -67,11 +91,27 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public UserResponseDto uploadAvatar(Long id, UserAvatarUploadRequestDto request) {
         requireNonNull(request, REQUEST_NULL_ERROR_MESSAGE);
+
+        String uploadedAvatarUrl = avatarStorageFactory.getService(storageConfig.getAvatar().getType())
+                        .uploadAvatar(id, request.file());
+
+        return self.updateAvatar(id, new UserAvatarUpdateRequestDto(uploadedAvatarUrl));
+    }
+
+    @Override
+    @Transactional
+    public UserResponseDto deleteAvatar(Long id) {
         User user = getUserByIdInternal(id);
+        String currentAvatarUrl = user.getAvatarUrl();
 
-        String uploadedAvatarUrl = avatarStorageService.uploadAvatar(id, request.file());
+        if (avatarConfig.isDefaultAvatarUrl(currentAvatarUrl)) {
+            throw new AvatarDeletionNotAllowedException();
+        }
 
-        user.setAvatarUrl(uploadedAvatarUrl);
+        resolveAvatarStorageService(currentAvatarUrl)
+                .ifPresent(service -> service.deleteAvatar(currentAvatarUrl));
+
+        user.setAvatarUrl(avatarConfig.assignRandomAvatar());
         return userMapper.toUserResponseDto(userRepository.save(user));
     }
 
@@ -101,5 +141,15 @@ public class UserServiceImpl implements UserService {
     private User getUserByIdInternal(Long id) {
         return  userRepository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException(id));
+    }
+
+    private boolean shouldDeleteCurrentAvatar(String currentAvatarUrl, String newAvatarUrl) {
+        return !Objects.equals(currentAvatarUrl, newAvatarUrl)
+                && !avatarConfig.isDefaultAvatarUrl(currentAvatarUrl);
+    }
+
+    private Optional<AvatarStorageService> resolveAvatarStorageService(String avatarUrl) {
+        return storagePathResolver.resolveStorageType(avatarUrl)
+                .map(avatarStorageFactory::getService);
     }
 }
