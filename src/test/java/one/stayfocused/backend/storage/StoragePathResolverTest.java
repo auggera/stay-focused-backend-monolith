@@ -51,4 +51,26 @@ class StoragePathResolverTest {
                 Arguments.of(MOCK_RESOURCE_PUBLIC_ID)
         );
     }
+
+    @ParameterizedTest
+    @MethodSource("invalidResourcePathProvider")
+    void shouldReturnEmptyOptional_whenInvalidInput(String urlOrPublicId) {
+        Optional<ResourceType> resourceType = resolver.resolveResourceType(urlOrPublicId);
+        Optional<StorageType> storageType = resolver.resolveStorageType(urlOrPublicId);
+        Optional<StoragePathResolver.ResolvedPathParts> parts = resolver.resolveFull(urlOrPublicId);
+
+        assertTrue(resourceType.isEmpty(),  "Expected empty ResourceType for input: " + urlOrPublicId);
+        assertTrue(storageType.isEmpty(),  "Expected empty StorageType for input: " + urlOrPublicId);
+        assertTrue(parts.isEmpty(), "Expected empty ResolvedPathParts for input: " + urlOrPublicId);
+    }
+
+    private static Stream<Arguments> invalidResourcePathProvider() {
+        return Stream.of(
+                Arguments.of("invalidPath"),
+                Arguments.of("path/not/exists"),
+                Arguments.of("user_42_abc123"),
+                Arguments.of("avatars/cloudinary/user_xyz_abc"),
+                Arguments.of("https://example.com/image.jpg")
+        );
+    }
 }
