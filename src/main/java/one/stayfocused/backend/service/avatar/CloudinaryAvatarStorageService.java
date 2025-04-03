@@ -22,7 +22,7 @@ import java.util.Objects;
 @RequiredArgsConstructor
 public class CloudinaryAvatarStorageService implements AvatarStorageService {
 
-    private final StoragePathBuilder pathBuilder;
+    private final StoragePathBuilder storagePathBuilder;
     private final Cloudinary cloudinary;
     private final StoragePathResolver storagePathResolver;
 
@@ -30,7 +30,7 @@ public class CloudinaryAvatarStorageService implements AvatarStorageService {
     public String uploadAvatar(Long userId, MultipartFile file) {
         try {
             Map<?, ?> uploadResult = cloudinary.uploader().upload(file.getBytes(), ObjectUtils.asMap(
-                    "public_id", pathBuilder.buildPublicId(ResourceType.AVATAR, getStorageType(), "user", userId),
+                    "public_id", storagePathBuilder.buildPublicId(ResourceType.AVATAR, getStorageType(), "user", userId),
                     "overwrite", true,
                     "resource_type", "image"
             ));
