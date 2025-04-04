@@ -53,7 +53,7 @@ public class CloudinaryAvatarStorageService implements AvatarStorageService {
             Object status = result.get("result");
 
             if (!Objects.equals("ok", status)) {
-                log.warn("Cloudinary returned non-ok status while deleting avatar: {}", status);
+                log.warn("Cloudinary returned non-ok status while deleting avatar. Status: '{}', Public ID: '{}'", status, publicId);
             }
         } catch (IOException e) {
             log.error("Failed to delete avatar from Cloudinary. {}", e.getMessage(), e);
@@ -68,11 +68,12 @@ public class CloudinaryAvatarStorageService implements AvatarStorageService {
 
     private String extractPublicId(String resourceUrl) {
         return storagePathResolver.resolveFull(resourceUrl)
-                .map(parts -> String.format("%s/%s/%s_%d",
+                .map(parts -> String.format("%s/%s/%s_%d_%s",
                         parts.resourceRaw(),
                         parts.storageRaw(),
                         parts.ownerLabel(),
-                        parts.ownerId()))
+                        parts.ownerId(),
+                        parts.uuid()))
                 .orElseThrow(() -> new AvatarDeletionException("Invalid avatar URL: cannot extract public_id"));
         }
 }

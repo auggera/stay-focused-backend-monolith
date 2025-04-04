@@ -27,7 +27,7 @@ import static org.mockito.Mockito.*;
 class CloudinaryAvatarStorageServiceTest {
 
     private static final long USER_ID = 1;
-    private static final String MOCK_PUBLIC_ID = "avatars/cloudinary/user_1";
+    private static final String MOCK_PUBLIC_ID = "avatars/cloudinary/user_1_abc123";
     private static final String MOCK_SECURE_URL = "https://cloudinary.com/avatars/cloudinary/user_1_abc123.png";
 
     @Mock private Cloudinary cloudinary;
@@ -82,7 +82,7 @@ class CloudinaryAvatarStorageServiceTest {
     @Test
     void shouldDeleteAvatarSuccessfully() throws IOException {
         StoragePathResolver.ResolvedPathParts parts = new StoragePathResolver.ResolvedPathParts(
-                "avatars", "cloudinary", "user", USER_ID
+                "avatars", "cloudinary", "user", USER_ID, "abc123"
         );
 
         doReturn(Optional.of(parts))
@@ -107,7 +107,7 @@ class CloudinaryAvatarStorageServiceTest {
     void shouldLogWarningIfResultNotOk() throws IOException {
         final String resourceUrl = "https://unknown.com/...";
 
-        StoragePathResolver.ResolvedPathParts parts = new StoragePathResolver.ResolvedPathParts("avatars", "cloudinary", "user", USER_ID);
+        StoragePathResolver.ResolvedPathParts parts = new StoragePathResolver.ResolvedPathParts("avatars", "cloudinary", "user", USER_ID, "abc123");
 
         doReturn(Optional.of(parts))
                 .when(storagePathResolver).resolveFull(resourceUrl);
@@ -141,7 +141,7 @@ class CloudinaryAvatarStorageServiceTest {
     @Test
     void shouldThrowExceptionOnCloudinaryFailure() throws IOException {
         StoragePathResolver.ResolvedPathParts parts = new StoragePathResolver.ResolvedPathParts(
-                "avatars", "cloudinary", "user", USER_ID
+                "avatars", "cloudinary", "user", USER_ID, "abc123"
         );
 
         doReturn(Optional.of(parts))

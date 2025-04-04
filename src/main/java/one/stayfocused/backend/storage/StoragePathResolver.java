@@ -14,7 +14,7 @@ import java.util.regex.Pattern;
 public class StoragePathResolver {
 
     private static final Pattern PATH_PATTERN = Pattern.compile(
-            "(?:.*/)?(?<resource>[^/]+)/(?<storage>[^/]+)/(?<owner>[^_]+)_(?<id>\\d+)"
+            "(?:.*/)?(?<resource>[^/]+)/(?<storage>[^/]+)/(?<owner>[^_]+)_(?<id>\\d+)_(?<uuid>[a-zA-Z0-9\\-]+)"
     );
 
     public Optional<StorageType> resolveStorageType(String urlOrPublicId) {
@@ -44,7 +44,8 @@ public class StoragePathResolver {
             String storage = matcher.group("storage");
             String owner = matcher.group("owner");
             Long id = Long.valueOf(matcher.group("id"));
-            return Optional.of(new ResolvedPathParts(resource, storage, owner, id));
+            String uuid = matcher.group("uuid");
+            return Optional.of(new ResolvedPathParts(resource, storage, owner, id, uuid));
         }
         return Optional.empty();
     }
@@ -61,6 +62,7 @@ public class StoragePathResolver {
     public record ResolvedPathParts(String resourceRaw,
                                      String storageRaw,
                                      String ownerLabel,
-                                     Long ownerId) {
+                                     Long ownerId,
+                                     String uuid) {
     }
 }
