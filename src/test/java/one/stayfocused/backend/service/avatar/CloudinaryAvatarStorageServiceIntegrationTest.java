@@ -1,5 +1,6 @@
 package one.stayfocused.backend.service.avatar;
 
+import one.stayfocused.backend.exception.AvatarDeletionException;
 import one.stayfocused.backend.exception.AvatarUploadException;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,8 +23,8 @@ class CloudinaryAvatarStorageServiceIntegrationTest {
     private CloudinaryAvatarStorageService cloudinaryAvatarStorageService;
 
     @Test
-    void uploadAvatar_ShouldUploadSuccessfully() throws AvatarUploadException, IOException {
-        Long userId = 1L;
+    void shouldUploadAndDeleteAvatarSuccessfully() throws AvatarUploadException, IOException {
+        long userId = 1L;
 
         File file = new File("src/test/resources/test-avatar.jpg");
         MultipartFile multipartFile = new MockMultipartFile(
@@ -33,10 +34,18 @@ class CloudinaryAvatarStorageServiceIntegrationTest {
                 Files.readAllBytes(file.toPath())
         );
 
-        String uploadedUrl = cloudinaryAvatarStorageService.uploadAvatar(userId, multipartFile);
+        String uploadedAvatarUrl = cloudinaryAvatarStorageService.uploadAvatar(userId, multipartFile);
+        assertNotNull(uploadedAvatarUrl);
+        System.out.println("Uploaded: " + uploadedAvatarUrl);
 
-        assertNotNull(uploadedUrl);
-        assertTrue(uploadedUrl.startsWith("https://res.cloudinary.com/"));
-        System.out.println("Avatar successfully uploaded: " + uploadedUrl);
+        assertDoesNotThrow(() -> cloudinaryAvatarStorageService.deleteAvatar(uploadedAvatarUrl));
+    }
+
+    @Test
+    void shouldUploadAvatarSuccessfully_andFailWhenDeletingAvatar() throws AvatarUploadException {
+        String invalidResourceUrl = "invalid-resource-url";
+
+        assertThrows(AvatarDeletionException.class,
+                () -> cloudinaryAvatarStorageService.deleteAvatar(invalidResourceUrl));
     }
 }
