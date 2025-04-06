@@ -24,6 +24,8 @@ import static java.util.Objects.requireNonNull;
 public class UserServiceImpl implements UserService {
 
     private static final String REQUEST_NULL_ERROR_MESSAGE = "Request must not be null";
+    private static final String USER_ID_NULL_ERROR_MESSAGE = "User ID must not be null";
+    private static final String USER_EMAIL_NULL_ERROR_MESSAGE = "User's email must not be null";
 
     private final AvatarStorageFactory avatarStorageFactory;
     private final UserRepository userRepository;
@@ -37,6 +39,7 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional(readOnly = true)
     public UserResponseDto getUserById(Long id) {
+        requireNonNull(id, USER_ID_NULL_ERROR_MESSAGE);
         User user = getUserByIdInternal(id);
 
         return  userMapper.toUserResponseDto(user);
@@ -45,6 +48,7 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional(readOnly = true)
     public UserResponseDto getUserByEmail(String email) {
+        requireNonNull(email, USER_EMAIL_NULL_ERROR_MESSAGE);
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UserNotFoundException(email));
 
@@ -54,6 +58,7 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public UserResponseDto updateName(Long id, UserNameUpdateRequestDto request) {
+        requireNonNull(id, USER_ID_NULL_ERROR_MESSAGE);
         requireNonNull(request, REQUEST_NULL_ERROR_MESSAGE);
 
         User user = getUserByIdInternal(id);
@@ -65,6 +70,7 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public UserResponseDto updateAvatar(Long id, UserAvatarUpdateRequestDto request) {
+        requireNonNull(id, USER_ID_NULL_ERROR_MESSAGE);
         requireNonNull(request, REQUEST_NULL_ERROR_MESSAGE);
         User user = getUserByIdInternal(id);
         String currentAvatarUrl = user.getAvatarUrl();
@@ -82,6 +88,7 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public UserResponseDto uploadAvatar(Long id, UserAvatarUploadRequestDto request) {
+        requireNonNull(id, USER_ID_NULL_ERROR_MESSAGE);
         requireNonNull(request, REQUEST_NULL_ERROR_MESSAGE);
 
         String uploadedAvatarUrl = avatarStorageFactory.getService(storageConfig.getAvatar().getType())
@@ -102,6 +109,7 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public UserResponseDto deleteAvatar(Long id) {
+        requireNonNull(id, USER_ID_NULL_ERROR_MESSAGE);
         User user = getUserByIdInternal(id);
         String currentAvatarUrl = user.getAvatarUrl();
 
@@ -119,6 +127,7 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public void deleteUser(Long id) {
+        requireNonNull(id, USER_ID_NULL_ERROR_MESSAGE);
         User user = getUserByIdInternal(id);
 
         String currentAvatarUrl = user.getAvatarUrl();
@@ -134,6 +143,7 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public void assignRole(Long userId, UserRoleAssignmentRequestDto request) {
+        requireNonNull(userId, USER_ID_NULL_ERROR_MESSAGE);
         requireNonNull(request, REQUEST_NULL_ERROR_MESSAGE);
 
         User user = getUserByIdInternal(userId);
