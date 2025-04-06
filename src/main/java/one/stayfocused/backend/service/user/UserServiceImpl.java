@@ -11,7 +11,6 @@ import one.stayfocused.backend.repository.*;
 import one.stayfocused.backend.service.avatar.AvatarStorageFactory;
 import one.stayfocused.backend.service.avatar.AvatarStorageService;
 import one.stayfocused.backend.storage.StoragePathResolver;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,13 +33,6 @@ public class UserServiceImpl implements UserService {
     private final AvatarConfig avatarConfig;
     private final StorageConfig storageConfig;
     private final StoragePathResolver storagePathResolver;
-
-    /**
-     * A proxy for calling transactional methods within the current class.
-     * Used to ensure @Transactional works for internal calls.
-     */
-    @Lazy
-    private final UserService self;
 
     @Override
     @Transactional(readOnly = true)
@@ -95,7 +87,16 @@ public class UserServiceImpl implements UserService {
         String uploadedAvatarUrl = avatarStorageFactory.getService(storageConfig.getAvatar().getType())
                         .uploadAvatar(id, request.file());
 
-        return self.updateAvatar(id, new UserAvatarUpdateRequestDto(uploadedAvatarUrl));
+        User user = getUserByIdInternal(id);
+        String currentAvatarUrl = user.getAvatarUrl();
+
+        if (shouldDeleteCurrentAvatar(currentAvatarUrl, uploadedAvatarUrl)) {
+            resolveAvatarStorageService(currentAvatarUrl)
+                    .ifPresent(service -> service.deleteAvatar(currentAvatarUrl));
+        }
+
+        user.setAvatarUrl(uploadedAvatarUrl);
+        return  userMapper.toUserResponseDto(userRepository.save(user));
     }
 
     @Override
@@ -118,9 +119,15 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public void deleteUser(Long id) {
-        if (!userRepository.existsById(id)) {
-            throw new UserNotFoundException(id);
+        User user = getUserByIdInternal(id);
+
+        String currentAvatarUrl = user.getAvatarUrl();
+
+        if (!avatarConfig.isDefaultAvatarUrl(currentAvatarUrl)) {
+            resolveAvatarStorageService(currentAvatarUrl)
+                    .ifPresent(service -> service.deleteAvatar(currentAvatarUrl));
         }
+
         userRepository.deleteById(id);
     }
 
