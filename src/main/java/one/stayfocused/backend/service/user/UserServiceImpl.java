@@ -90,11 +90,11 @@ public class UserServiceImpl implements UserService {
     public UserResponseDto uploadAvatar(Long id, UserAvatarUploadRequestDto request) {
         requireNonNull(id, USER_ID_NULL_ERROR_MESSAGE);
         requireNonNull(request, REQUEST_NULL_ERROR_MESSAGE);
+        User user = getUserByIdInternal(id);
 
         String uploadedAvatarUrl = avatarStorageFactory.getService(storageConfig.getAvatar().getType())
                         .uploadAvatar(id, request.file());
 
-        User user = getUserByIdInternal(id);
         String currentAvatarUrl = user.getAvatarUrl();
 
         if (shouldDeleteCurrentAvatar(currentAvatarUrl, uploadedAvatarUrl)) {
