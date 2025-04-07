@@ -214,3 +214,13 @@ databaseChangeLog:
             columns:
               - column:
                   name: user_id
+
+  - changeSet:
+      id: 7
+      author: Augustin Gerasym
+      changes:
+        - renameColumn:
+            tableName: users
+            oldColumnName: password_hash
+            newColumnName: password
+            columnDataType: varchar(255)
