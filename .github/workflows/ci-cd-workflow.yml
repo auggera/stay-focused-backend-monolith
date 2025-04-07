@@ -10,6 +10,15 @@ jobs:
   build_and_test:
     runs-on: ubuntu-latest
 
+    env:
+      SF_MONO_CLOUDINARY_CLOUD_NAME: ${{ secrets.SF_MONO_CLOUDINARY_CLOUD_NAME }}
+      SF_MONO_CLOUDINARY_API_KEY: ${{ secrets.SF_MONO_CLOUDINARY_API_KEY }}
+      SF_MONO_CLOUDINARY_API_SECRET: ${{ secrets.SF_MONO_CLOUDINARY_API_SECRET }}
+
+      SF_MONO_TEST_DATASOURCE_URL: ${{ secrets.SF_MONO_TEST_DATASOURCE_URL }}
+      SF_MONO_TEST_DATASOURCE_USERNAME: ${{ secrets.SF_MONO_TEST_DATASOURCE_USERNAME }}
+      SF_MONO_TEST_DATASOURCE_PASSWORD: ${{ secrets.SF_MONO_TEST_DATASOURCE_PASSWORD }}
+
     steps:
       - uses: actions/checkout@v4
 
